@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>hyperfoil-all</artifactId>
+        <groupId>io.hyperfoil</groupId>
+        <version>0.27-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>hyperfoil-clustering</artifactId>
+
+    <name>Hyperfoil Clustering</name>
+    <url>https://github.com/RedHatPerf/Hyperfoil</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <io.hyperfoil.clustered>true</io.hyperfoil.clustered>
+        <io.hyperfoil.debug />
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-unit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-infinispan</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.marshalling</groupId>
+                    <artifactId>jboss-marshalling-osgi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.threads</groupId>
+                    <artifactId>jboss-threads</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.common</groupId>
+            <artifactId>wildfly-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.hyperfoil</groupId>
+            <artifactId>hyperfoil-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.hyperfoil</groupId>
+            <artifactId>hyperfoil-controller-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.hyperfoil</groupId>
+            <artifactId>hyperfoil-cli</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>sshd-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>sshd-scp</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>sshd-sftp</artifactId>
+        </dependency>
+
+        <!-- SSHD has dependency on org/slf4j/event/Level -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.i2p.crypto</groupId>
+            <artifactId>eddsa</artifactId>
+        </dependency>
+
+        <dependency>
+            <!-- necessary for MR artifacts to be available
+            for >8 jre -->
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling</artifactId>
+        </dependency>
+
+        <dependency>
+            <!-- necessary for MR artifacts to be available
+            for >8 jre -->
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
+        </dependency>
+
+        <dependency>
+            <!-- necessary for MR artifacts to be available
+            for >8 jre -->
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-serial</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.threads</groupId>
+            <artifactId>jboss-threads</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skip>false</skip>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-cp</argument>
+                        <classpath />
+                        <argument>-Dio.hyperfoil.clustered=${io.hyperfoil.clustered}</argument>
+                        <argument>${io.hyperfoil.debug}</argument>
+                        <argument>io.hyperfoil.boot.Hyperfoil.Controller</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>debug</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <io.hyperfoil.debug>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</io.hyperfoil.debug>
+            </properties>
+        </profile>
+    </profiles>
+</project>

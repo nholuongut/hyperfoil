@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>hyperfoil-all</artifactId>
+        <groupId>io.hyperfoil</groupId>
+        <version>0.27-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>hyperfoil-distribution</artifactId>
+    <name>Hyperfoil Distribution</name>
+    <description>Package distributable version of Hyperfoil</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <module.skipCopyDependencies>true</module.skipCopyDependencies>
+        <container.registry.repository>quay.io/hyperfoil</container.registry.repository>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hyperfoil-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hyperfoil-cli</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hyperfoil-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hyperfoil-clustering</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hyperfoil-http</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hyperfoil-hotrod</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hyperfoil-k8s-deployer</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Since this plugin has pom-packaging we must explicitly request to compile sources and run tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/src/main/resources</additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <workingDirectory>${project.basedir}/src/main/resources</workingDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>io/hyperfoil/example/**</include>
+                                <include>META-INF/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <ant antfile="src/assembly/package.xml" inheritRefs="true" />
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>schema</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-cp</argument>
+                                <classpath />
+                                <argument>io.hyperfoil.schema.Generator</argument>
+                                <argument>${project.basedir}/src/main/resources/schema.json</argument>
+                                <argument>${project.build.directory}/distribution/docs/schema.json</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>docs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-cp</argument>
+                                <classpath />
+                                <!-- <argument>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</argument>-->
+                                <argument>io.hyperfoil.schema.DocsGenerator</argument>
+                                <argument>${project.basedir}/../api/src/main/java/</argument>
+                                <argument>${project.basedir}/../core/src/main/java/</argument>
+                                <argument>${project.basedir}/../http/src/main/java/</argument>
+                                <argument>${project.basedir}/../hotrod/src/main/java/</argument>
+                                <argument>${project.build.directory}/steps</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>create-distribution-zip</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>hyperfoil-${project.version}</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+                                <descriptor>src/assembly/assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>podman</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <jkube.docker.host>tcp://localhost:2375</jkube.docker.host>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>podman-system-service</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>false</skip>
+                                    <async>true</async>
+                                    <!-- We're not terminating this forcefully as podman 2.0.6 seems to hang
+                                         in shutdown when SIGTERM is received. Without killing it it correctly
+                                         stops after 1 minute of inactivity -->
+                                    <!-- <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown> -->
+                                    <executable>podman</executable>
+                                    <arguments>
+                                        <argument>system</argument>
+                                        <argument>service</argument>
+                                        <argument>-t</argument>
+                                        <argument>60</argument>
+                                        <argument>tcp:localhost:2375</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>build-image</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>image-tars</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/dependency-tar.xml</descriptor>
+                                        <descriptor>src/assembly/hyperfoil-tar.xml</descriptor>
+                                    </descriptors>
+                                    <tarLongFileMode>posix</tarLongFileMode>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.eclipse.jkube</groupId>
+                        <artifactId>kubernetes-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <access>
+                                <!-- We shouldn't connect anywhere, this is here to fail faster -->
+                                <masterUrl>http://127.0.0.1:12345</masterUrl>
+                            </access>
+                            <images>
+                                <image>
+                                    <name>${container.registry.repository}/hyperfoil:${project.version}</name>
+                                    <build>
+                                        <contextDir>${project.basedir}/src/main/docker/</contextDir>
+                                        <tags>
+                                            <tag>latest</tag>
+                                            <tag>${project.version}</tag>
+                                        </tags>
+                                        <assembly>
+                                            <name>maven</name>
+                                            <inline>
+                                                <fileSets>
+                                                    <fileSet>
+                                                        <outputDirectory>bin</outputDirectory>
+                                                        <directory>target/distribution/bin</directory>
+                                                    </fileSet>
+                                                    <fileSet>
+                                                        <outputDirectory>examples</outputDirectory>
+                                                        <directory>target/distribution/examples</directory>
+                                                        <includes>
+                                                            <includes>*.hf.yaml</includes>
+                                                        </includes>
+                                                    </fileSet>
+                                                    <fileSet>
+                                                        <outputDirectory>templates</outputDirectory>
+                                                        <directory>target/distribution/templates</directory>
+                                                    </fileSet>
+                                                    <fileSet>
+                                                        <outputDirectory>.</outputDirectory>
+                                                        <directory>target</directory>
+                                                        <includes>
+                                                            <include>hyperfoil-*.tar</include>
+                                                        </includes>
+                                                    </fileSet>
+                                                </fileSets>
+                                            </inline>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

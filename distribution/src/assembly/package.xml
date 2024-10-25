@@ -1,0 +1,70 @@
+<project name="hyperfoil-package" basedir="." default="package">
+    <property name="root.dir" value=".."/>
+    <property name="dist.dir" value="${project.build.directory}/distribution"/>
+    <property name="docs.dir" value="../docs/site/static"/>
+
+    <target name="package" depends="clean, all"/>
+
+    <target name="clean">
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="all">
+        <mkdir dir="${dist.dir}/docs"/>
+        <mkdir dir="${dist.dir}/examples"/>
+        <mkdir dir="${dist.dir}/bin"/>
+        <mkdir dir="${dist.dir}/lib"/>
+        <mkdir dir="${dist.dir}/extensions"/>
+        <mkdir dir="${dist.dir}/templates"/>
+
+        <copy-module module="api"/>
+        <copy-module module="cli"/>
+        <copy-module module="clustering"/>
+        <copy-module module="controller-api"/>
+        <copy-module module="core"/>
+        <copy-module module="http"/>
+        <copy-module module="k8s-deployer"/>
+        <copy-module module="hotrod"/>
+
+        <copy todir="${dist.dir}/bin" failonerror="true">
+            <fileset dir="src/main/resources/">
+                <include name="*.sh"/>
+            </fileset>
+        </copy>
+
+        <chmod perm="755">
+            <fileset dir="${dist.dir}/bin">
+                <include name="**/*.sh"/>
+            </fileset>
+        </chmod>
+
+        <copy todir="${dist.dir}/examples" failonerror="true">
+            <fileset dir="src/main/resources/examples">
+                <include name="**/*"/>
+            </fileset>
+        </copy>
+
+        <copy tofile="${dist.dir}/extensions/example-extension.jar" failonerror="true">
+            <fileset dir="target">
+                <include name="hyperfoil-distribution-*.jar"/>
+            </fileset>
+        </copy>
+
+        <copy tofile="${dist.dir}/templates/report-template-v3.1.html" failonerror="true">
+            <fileset dir="${docs.dir}">
+                <include name="report-template-v3.1.html"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <macrodef name="copy-module">
+        <attribute name="module"/>
+        <sequential>
+            <copy todir="${dist.dir}/lib" failonerror="true" flatten="true">
+                <file file="${io.hyperfoil:hyperfoil-@{module}:jar}"/>
+                <fileset dir="${root.dir}/@{module}/target/dependency"/>
+            </copy>
+        </sequential>
+    </macrodef>
+
+</project>

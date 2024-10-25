@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>hyperfoil-all</artifactId>
+        <groupId>io.hyperfoil</groupId>
+        <version>0.27-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>hyperfoil-cli</artifactId>
+
+    <version>0.27-SNAPSHOT</version>
+
+    <name>Hyperfoil CLI</name>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.aesh</groupId>
+            <artifactId>aesh</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.hyperfoil</groupId>
+            <artifactId>hyperfoil-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.hyperfoil</groupId>
+            <artifactId>hyperfoil-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.hyperfoil</groupId>
+            <artifactId>hyperfoil-http</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.hyperfoil</groupId>
+            <artifactId>hyperfoil-controller-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web-client</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.4.1.Final</version>
+            </extension>
+        </extensions>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/log4j2.xml</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+        </plugins>
+
+    </build>
+</project>

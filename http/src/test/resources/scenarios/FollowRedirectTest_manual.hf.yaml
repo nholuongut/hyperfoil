@@ -1,0 +1,66 @@
+# For parser testing
+name: follow redirects manual
+http:
+  host: !concat [ "http://localhost:", !param PORT 8080 ]
+  # Do not limit concurrency through default connection limits
+  sharedConnections: 10
+phases:
+- testPhase:
+    atOnce:
+      users: 100
+      duration: 0
+      scenario:
+        orderedSequences:
+        - redirectMe:
+          # All variables should be potentially concurrency-aware
+          - set: redirect <- false
+          - unset: location
+          - unset: actualBody
+          - httpRequest:
+              GET: /redirectMeViaLocation
+              headers:
+                x-preserve: repeat me with redirect
+              handler:
+                followRedirect: NEVER # Disable automatic redirect
+                status:
+                  action:
+                    # Note: non-get redirection should set new request method rather than simply boolean
+                    301, 302, 303, 307, 308:
+                    - set: redirect <- true
+                header:
+                  filter:
+                    header:
+                      value: location
+                    processor:
+                    - store: location
+                    - newSequence: redirectMe_redirect
+                body:
+                  # Any handlers need to be wrapped and prevented from application
+                  conditional:
+                    boolCondition:
+                      fromVar: redirect
+                      value: false
+                    processor:
+                      store: actualBody
+          - awaitVar: actualBody
+          - fail:
+              message: not redirected but wrong response
+              stringCondition:
+                fromVar: actualBody
+                notEqualTo: this is the response
+        sequences:
+        # Concurrency of this sequence should be equal to the originating sequence
+        - redirectMe_redirect:
+          - httpRequest:
+              # Method type should be based on status
+              GET:
+                fromVar: location
+              sync: false # No need to insert sync steps
+              headers:
+                # All headers should be repeated
+                x-preserve: repeat me with redirect
+              # We should loop the redirection to this sequence
+              handler:
+                followRedirect: NEVER
+                body:
+                  store: actualBody

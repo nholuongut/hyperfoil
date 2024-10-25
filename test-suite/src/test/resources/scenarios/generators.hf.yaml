@@ -1,0 +1,44 @@
+# For parser testing
+name: generators
+http:
+  host: http://localhost:8080
+phases:
+- testPhase:
+    atOnce:
+      users: 1
+      duration: 0
+      scenario: &s
+        initialSequences:
+        - testSequence:
+          - randomItem:
+              list: [ "A", "B", "C" ]
+              toVar: x
+          - randomItem:
+              list:
+              - A
+              - B
+              - C
+              toVar: "y" # without the quotes `y` means `true` = boolean, not string
+          - randomItem:
+              file: data/YamlParserTest_testGeneratorsYaml_foo.txt
+              toVar: z
+          - randomItem:
+              list:
+              - foo: 1
+              - bar: 0.5
+              toVar: zz
+          - randomItem:
+              list:
+                foo: 0.9
+                bar: 0.1
+              toVar: zzz
+          - randomFile:
+              files: # Reuse some existing files
+              - data/testdata.csv
+              - data/random-sample-test.csv
+              toVar: xxx
+- anotherPhase:
+    atOnce:
+      users: 1
+      duration: 0
+      scenario: *s

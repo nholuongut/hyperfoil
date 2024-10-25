@@ -1,0 +1,46 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ "*" ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    env:
+      NO_DOWNLOAD_MESSAGE: "-B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'adopt'
+        java-version: 17
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    - name: Generate SSH keys
+      run: ssh-keygen -t rsa -b 4096 -C "github@hyperfoil.io" -f ~/.ssh/id_rsa
+    - name: Authorize SSH key on localhost
+      run: cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+    - name: Gather known hosts
+      run: ssh-keyscan localhost >> ~/.ssh/known_hosts
+    - name: Fix home dir permissions
+      run: chmod go-w /home/$USER && chmod 700 /home/$USER/.ssh && chmod 600 /home/$USER/.ssh/authorized_keys
+    - name: Build with Maven
+      run: mvn clean -B package --file pom.xml -Pbenchmark -Pbuild-image -Dio.hyperfoil.agent.java.executable=$JAVA_HOME/bin/java $NO_DOWNLOAD_MESSAGE -Dagent.log.trace
+    - name: Upload artifact for failed workflow
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test logs
+        path: |
+          */target/surefire-reports/*
+          test-suite/target/hyperfoil/*.log

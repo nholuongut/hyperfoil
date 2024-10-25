@@ -1,0 +1,16 @@
+name: io.hyperfoil.benchmark.standalone.IterationsTest
+http:
+  host: !concat [ "http://localhost:", !param PORT 8080 ]
+phases:
+- test:
+    constantRate:
+      usersPerSec:
+        base: 100
+        increment: 100
+      maxIterations: 3
+      duration: 5s
+      scenario:
+        orderedSequences:
+        - test:
+          - httpRequest:
+              GET: /foo

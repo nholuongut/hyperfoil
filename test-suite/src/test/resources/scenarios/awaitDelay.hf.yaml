@@ -1,0 +1,22 @@
+name: await delay benchmark
+http:
+  host: http://localhost:8080
+  sharedConnections: 200
+phases:
+- steadyState:
+    constantRate:
+      usersPerSec: 100
+      duration: 30s
+      scenario:
+        initialSequences:
+        - testSequence:
+          - scheduleDelay:
+              fromNow:
+              key: thinkTime
+              duration: 1s
+          - httpRequest:
+              GET: /index.html
+          - httpRequest:
+              GET: /api/fruits-normal
+          - awaitDelay:
+              key: thinkTime
